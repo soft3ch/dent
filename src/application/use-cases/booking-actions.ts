@@ -106,8 +106,10 @@ export async function bookAppointment(data: {
   treatmentId: string | null;
   dateStr: string;   
   timeStr: string;   
+  paymentMethod: string;
+  insuranceName: string | null;
 }) {
-  const { fullName, phone, reason, treatmentId, dateStr, timeStr } = data;
+  const { fullName, phone, reason, treatmentId, dateStr, timeStr, paymentMethod, insuranceName } = data;
   
   if (!fullName || !phone || !dateStr || !timeStr) {
     throw new Error('Missing required fields');
@@ -142,7 +144,9 @@ export async function bookAppointment(data: {
     patient_id: patientId,
     start_time: startDateTime.toISOString(),
     notes: reason || null,
-    status: 'pending'
+    status: 'pending',
+    payment_method: paymentMethod,
+    insurance_name: insuranceName
   };
   
   if (treatmentId) {

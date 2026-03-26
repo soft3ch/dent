@@ -16,13 +16,27 @@ import { useMonthAvailability } from '@/application/use-cases/useMonthAvailabili
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay, addMinutes, parse, isBefore, isAfter, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-export default function BookingFlow() {
+export default function BookingFlow({
+  preloadedPatientId,
+  preloadedFullName,
+  preloadedPhone
+}: {
+  preloadedPatientId?: string;
+  preloadedFullName?: string;
+  preloadedPhone?: string;
+} = {}) {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [currentMonthDate, setCurrentMonthDate] = useState(startOfMonth(new Date()));
   
-  const [formData, setFormData] = useState({ fullName: '', phone: '', reason: '' });
+  const [formData, setFormData] = useState({ 
+    fullName: preloadedFullName || '', 
+    phone: preloadedPhone || '', 
+    reason: '' 
+  });
+  const [paymentMethod, setPaymentMethod] = useState<'particular' | 'obra_social'>('particular');
+  const [insuranceName, setInsuranceName] = useState('');
   const [isBooking, startBooking] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
   const [bookedDetails, setBookedDetails] = useState<any>(null);
@@ -91,6 +105,10 @@ export default function BookingFlow() {
       setErrorMsg('Por favor, completa todos los campos requeridos (Nombre, Teléfono, Fecha y Hora).');
       return;
     }
+    if (paymentMethod === 'obra_social' && !insuranceName.trim()) {
+      setErrorMsg('Por favor, ingresa el nombre de tu Obra Social.');
+      return;
+    }
     setErrorMsg('');
     
     startBooking(async () => {
@@ -101,7 +119,9 @@ export default function BookingFlow() {
           reason: formData.reason,
           treatmentId: null, 
           dateStr: format(selectedDate, 'yyyy-MM-dd'),
-          timeStr: selectedTime
+          timeStr: selectedTime,
+          paymentMethod,
+          insuranceName: paymentMethod === 'obra_social' ? insuranceName.trim() : null
         });
         setBookedDetails(result);
         setIsSuccess(true);
@@ -141,6 +161,17 @@ export default function BookingFlow() {
             <div>
               <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Hora</p>
               <p className="font-semibold text-lg">{format(new Date(bookedDetails.start_time), 'HH:mm')}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 text-on-surface">
+            <div className="bg-white p-2 rounded-lg text-primary shadow-sm"><Activity size={20} /></div>
+            <div>
+              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Cobertura</p>
+              <p className="font-semibold capitalize">
+                {bookedDetails.payment_method === 'obra_social' 
+                  ? `Obra Social (${bookedDetails.insurance_name})` 
+                  : 'Particular'}
+              </p>
             </div>
           </div>
         </div>
@@ -214,8 +245,9 @@ export default function BookingFlow() {
               <input 
                 value={formData.fullName}
                 onChange={e => setFormData({...formData, fullName: e.target.value})}
+                readOnly={!!preloadedPatientId}
                 type="text" 
-                className="w-full h-12 px-4 rounded-lg bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/40 text-on-surface" 
+                className={`w-full h-12 px-4 rounded-lg bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/40 text-on-surface ${preloadedPatientId ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''}`} 
                 placeholder="Ej. Juan Pérez" 
               />
             </div>
@@ -224,8 +256,9 @@ export default function BookingFlow() {
               <input 
                 value={formData.phone}
                 onChange={e => setFormData({...formData, phone: e.target.value})}
+                readOnly={!!preloadedPatientId}
                 type="tel" 
-                className="w-full h-12 px-4 rounded-lg bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/40 text-on-surface" 
+                className={`w-full h-12 px-4 rounded-lg bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/40 text-on-surface ${preloadedPatientId ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''}`} 
                 placeholder="+34 000 000 000" 
               />
             </div>
@@ -239,6 +272,47 @@ export default function BookingFlow() {
                 rows={3}
               />
             </div>
+            
+            <div className="md:col-span-2 space-y-4 mt-2">
+              <label className="text-sm font-semibold text-on-surface-variant ml-1">Cobertura Médica *</label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('particular')}
+                  className={`flex items-center justify-center py-3 px-4 rounded-xl border-2 transition-all font-semibold ${
+                    paymentMethod === 'particular'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-transparent bg-surface-container-lowest text-on-surface hover:border-primary/30'
+                  }`}
+                >
+                  Particular
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('obra_social')}
+                  className={`flex items-center justify-center py-3 px-4 rounded-xl border-2 transition-all font-semibold ${
+                    paymentMethod === 'obra_social'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-transparent bg-surface-container-lowest text-on-surface hover:border-primary/30'
+                  }`}
+                >
+                  Obra Social
+                </button>
+              </div>
+            </div>
+
+            {paymentMethod === 'obra_social' && (
+              <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="text-sm font-semibold text-on-surface-variant ml-1">Nombre de la Obra Social *</label>
+                <input 
+                  value={insuranceName}
+                  onChange={e => setInsuranceName(e.target.value)}
+                  type="text" 
+                  className="w-full h-12 px-4 rounded-lg bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/40 text-on-surface" 
+                  placeholder="Ej. OSDE, Swiss Medical..." 
+                />
+              </div>
+            )}
           </form>
         </div>
       </div>
