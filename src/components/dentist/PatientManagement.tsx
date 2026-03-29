@@ -254,8 +254,7 @@ export default function PatientManagement() {
                   </div>
                   <div className="flex gap-3">
                     <PDFExportButton
-                      selectedPatient={selectedPatient}
-                      patientDetails={patientDetails}
+                      patient={patientDetails.patient}
                       pastAppointments={pastAppointments}
                     />
                     <button onClick={() => setIsBookingModalOpen(true)} className="bg-primary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm">
