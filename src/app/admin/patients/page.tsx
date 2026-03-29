@@ -1,7 +1,7 @@
 import PatientManagement from '@/components/dentist/PatientManagement';
 
 export const metadata = {
-  title: 'Gestión de Pacientes | Serenity Dental',
+  title: 'Gestión de Pacientes | Dra. Flavia Gisela Toledo',
   description: 'Panel de administración de pacientes',
 };
 

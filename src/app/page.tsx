@@ -6,7 +6,7 @@ export default function Home() {
       <header className="fixed top-0 w-full z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] h-16">
         <div className="flex justify-between items-center px-8 h-full w-full max-w-screen-2xl mx-auto">
           <div className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-headline">
-            Clinical Serenity
+            Dra. Flavia Gisela Toledo
           </div>
           <nav className="hidden md:flex items-center gap-8 font-semibold">
             <a href="/dashboard" className="text-slate-500 hover:text-slate-900 transition-all">Dashboard Dentist</a>

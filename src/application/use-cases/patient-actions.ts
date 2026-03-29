@@ -84,6 +84,50 @@ export async function getPatientDetails(patientId: string) {
   };
 }
 
+export async function getMedicalHistory(patientId: string) {
+  const { data, error } = await supabase
+    .from('medical_history')
+    .select('*')
+    .eq('patient_id', patientId)
+    .maybeSingle();
+
+  if (error) throw new Error('Error fetching medical history: ' + error.message);
+  return data;
+}
+
+export async function upsertMedicalHistory(patientId: string, history: any) {
+  const { data, error } = await supabase
+    .from('medical_history')
+    .upsert({ ...history, patient_id: patientId, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+
+  if (error) throw new Error('Error saving medical history: ' + error.message);
+  return data;
+}
+
+export async function getOdontogramEntries(patientId: string) {
+  const { data, error } = await supabase
+    .from('odontogram_entries')
+    .select('*')
+    .eq('patient_id', patientId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error('Error fetching odontogram entries: ' + error.message);
+  return data || [];
+}
+
+export async function saveOdontogramEntry(entry: { patient_id: string, tooth_number: number, condition: string, description?: string }) {
+  const { data, error } = await supabase
+    .from('odontogram_entries')
+    .insert([entry])
+    .select()
+    .single();
+
+  if (error) throw new Error('Error saving odontogram entry: ' + error.message);
+  return data;
+}
+
 export async function saveClinicalNote(data: { patientId: string, appointmentId: string, content: string }) {
   const { data: note, error } = await supabase
     .from('clinical_notes')
@@ -94,12 +138,34 @@ export async function saveClinicalNote(data: { patientId: string, appointmentId:
     }])
     .select()
     .single();
-
   if (error) throw new Error('Error saving clinical note: ' + error.message);
   return note;
 }
 
-export async function updatePatientProfile(patientId: string, updates: { dni?: string, phone?: string, email?: string }) {
+export async function saveMultipleOdontogramEntries(entries: { patient_id: string, tooth_number: number, condition: string, description?: string }[]) {
+  const { data, error } = await supabase
+    .from('odontogram_entries')
+    .insert(entries)
+    .select();
+
+  if (error) throw new Error('Error saving odontogram entries: ' + error.message);
+  return data;
+}
+
+export async function updatePatientProfile(patientId: string, updates: { 
+  dni?: string, 
+  phone?: string, 
+  email?: string,
+  full_name?: string,
+  insurance_name?: string,
+  plan_details?: string,
+  affiliation_number?: string,
+  address?: string,
+  birth_date?: string,
+  work_location?: string,
+  is_titular?: boolean,
+  titular_relationship?: string
+}) {
   const { data, error } = await supabase
     .from('patients')
     .update(updates)

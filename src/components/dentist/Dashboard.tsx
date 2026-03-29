@@ -46,7 +46,7 @@ export default function Dashboard() {
 
   const openWhatsApp = (phone: string, name: string, time: string) => {
     const timeFormatted = format(new Date(time), 'HH:mm');
-    const text = encodeURIComponent(`Hola ${name}, te recordamos tu turno hoy a las ${timeFormatted} en Clinical Serenity.`);
+    const text = encodeURIComponent(`Hola ${name}, te recordamos tu turno hoy a las ${timeFormatted} en Dra. Flavia Gisela Toledo.`);
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
   };
 
@@ -129,7 +129,7 @@ export default function Dashboard() {
             <Building2 className="text-white" size={20} />
           </div>
           <div>
-            <h1 className="text-lg font-extrabold text-blue-700 dark:text-blue-400 leading-tight">Serenity Dental</h1>
+            <h1 className="text-lg font-extrabold text-blue-700 dark:text-blue-400 leading-tight">Dra. Flavia Gisela Toledo</h1>
             <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Premium Oral Care</p>
           </div>
         </div>
@@ -262,8 +262,8 @@ export default function Dashboard() {
                                     {app.treatment?.name || 'Turno'}
                                   </p>
                                   <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm whitespace-nowrap shrink-0 ${app.payment_method === 'obra_social'
-                                      ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
-                                      : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                    ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
+                                    : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                                     }`}>
                                     {app.payment_method === 'obra_social' ? (app.insurance_name || 'Obra Social') : 'Part.'}
                                   </span>
@@ -455,8 +455,8 @@ export default function Dashboard() {
                 <p className="text-[10px] font-bold text-slate-500 uppercase">Cobertura</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className={`text-xs font-bold px-2 py-1 rounded-md ${selectedAppointment.payment_method === 'obra_social'
-                      ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
-                      : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                    ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
+                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
                     }`}>
                     {selectedAppointment.payment_method === 'obra_social'
                       ? `Obra Social - ${selectedAppointment.insurance_name || 'Sin especificar'}`

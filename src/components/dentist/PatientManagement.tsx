@@ -1,30 +1,32 @@
 'use client';
 import React, { useState, useEffect, useTransition } from 'react';
-import { 
-  Building2, Users, Search, ChevronLeft, Calendar, 
+import {
+  Building2, Users, Search, ChevronLeft, Calendar,
   Clock, FileText, Loader2, Save, Plus, ArrowLeft, Phone, Mail, Activity, Edit3, X, CheckSquare, Printer
 } from 'lucide-react';
-import { 
-  getPatientsList, getPatientDetails, saveClinicalNote, 
-  updatePatientProfile, getTreatmentsList, assignPatientTreatment 
+import {
+  getPatientsList, getPatientDetails, saveClinicalNote,
+  updatePatientProfile, getTreatmentsList, assignPatientTreatment
 } from '@/application/use-cases/patient-actions';
 import { format, isAfter } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Link from 'next/link';
 import BookingFlow from '@/components/patient/BookingFlow';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 
 const PDFExportButton = dynamic(() => import('./PDFExportButton'), { ssr: false });
 
 export default function PatientManagement() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [patients, setPatients] = useState<any[]>([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
-  
+
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [patientDetails, setPatientDetails] = useState<any>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  
+
   const [activeTab, setActiveTab] = useState<'historial' | 'contacto'>('historial');
   const [isPending, startTransition] = useTransition();
 
@@ -94,7 +96,7 @@ export default function PatientManagement() {
   const handleSaveNote = async (appointmentId: string) => {
     const content = noteContent[appointmentId];
     if (!content || !content.trim() || !selectedPatient) return;
-    
+
     setSavingNoteFor(appointmentId);
     try {
       await saveClinicalNote({
@@ -150,7 +152,7 @@ export default function PatientManagement() {
             <Building2 className="text-white" size={20} />
           </div>
           <div>
-            <h1 className="text-lg font-extrabold text-blue-700 dark:text-blue-400 leading-tight">Serenity Dental</h1>
+            <h1 className="text-lg font-extrabold text-blue-700 dark:text-blue-400 leading-tight">Dra. Flavia Gisela Toledo</h1>
             <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Premium Oral Care</p>
           </div>
         </div>
@@ -180,9 +182,9 @@ export default function PatientManagement() {
                 <h3 className="text-2xl font-bold font-headline">Directorio de Pacientes</h3>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input 
-                    type="text" 
-                    placeholder="Buscar por nombre o DNI..." 
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre o DNI..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="pl-10 pr-4 py-2 w-72 rounded-xl bg-surface-container border-none focus:ring-2 focus:ring-primary text-sm"
@@ -206,16 +208,19 @@ export default function PatientManagement() {
                     </thead>
                     <tbody className="divide-y divide-surface-container-high/50">
                       {patients.map(p => (
-                        <tr key={p.id} className="hover:bg-surface-container/30 transition-colors group cursor-pointer" onClick={() => setSelectedPatient(p)}>
+                        <tr
+                          key={p.id}
+                          className="hover:bg-surface-container/30 transition-colors group cursor-pointer"
+                          onClick={() => router.push(`/admin/patients/${p.id}`)}
+                        >
                           <td className="py-4 px-4 font-semibold text-slate-900">{p.full_name}</td>
                           <td className="py-4 px-4 text-sm text-slate-500">{p.dni || '-'}</td>
                           <td className="py-4 px-4 text-sm text-slate-500">{p.phone}</td>
                           <td className="py-4 px-4">
-                            <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${
-                              p.recent_payment_method === 'Obra Social' ? 'bg-sky-100 text-sky-700' : 
-                              p.recent_payment_method === 'Particular' ? 'bg-emerald-50 text-emerald-600' : 
-                              'bg-slate-100 text-slate-500'
-                            }`}>
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${p.recent_payment_method === 'Obra Social' ? 'bg-sky-100 text-sky-700' :
+                                p.recent_payment_method === 'Particular' ? 'bg-emerald-50 text-emerald-600' :
+                                  'bg-slate-100 text-slate-500'
+                              }`}>
                               {p.recent_payment_method}
                             </span>
                           </td>
@@ -248,7 +253,7 @@ export default function PatientManagement() {
                     <p className="text-sm font-medium text-slate-500 mt-1">DNI: {patientDetails?.patient?.dni || 'No registrado'} • Paciente desde {format(new Date(selectedPatient.created_at), 'MMM yyyy', { locale: es })}</p>
                   </div>
                   <div className="flex gap-3">
-                    <PDFExportButton 
+                    <PDFExportButton
                       selectedPatient={selectedPatient}
                       patientDetails={patientDetails}
                       pastAppointments={pastAppointments}
@@ -264,16 +269,16 @@ export default function PatientManagement() {
                 <div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>
               ) : (
                 <div className="flex-1 flex flex-col p-8 bg-surface-container-lowest overflow-hidden">
-                  
+
                   {/* Custom Shadcn-like Tabs */}
                   <div className="flex bg-slate-100 p-1 rounded-lg w-fit mb-8 shrink-0">
-                    <button 
+                    <button
                       onClick={() => setActiveTab('historial')}
                       className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${activeTab === 'historial' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                       Historial Clínico
                     </button>
-                    <button 
+                    <button
                       onClick={() => setActiveTab('contacto')}
                       className={`px-6 py-2 text-sm font-bold rounded-md transition-all ${activeTab === 'contacto' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
@@ -286,7 +291,7 @@ export default function PatientManagement() {
                     {activeTab === 'historial' && (
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pb-12">
                         <div className="col-span-2 space-y-8">
-                          
+
                           {/* Tratamientos Generales del Paciente */}
                           <div>
                             <h3 className="text-xl font-bold text-slate-900 font-headline mb-4 flex items-center gap-2">
@@ -294,8 +299,8 @@ export default function PatientManagement() {
                             </h3>
                             <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                               <div className="flex gap-4 mb-4">
-                                <select 
-                                  value={selectedTreatmentToAssign} 
+                                <select
+                                  value={selectedTreatmentToAssign}
                                   onChange={(e) => setSelectedTreatmentToAssign(e.target.value)}
                                   className="flex-1 text-sm bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/30 py-3 px-4"
                                 >
@@ -304,7 +309,7 @@ export default function PatientManagement() {
                                     <option key={t.id} value={t.id}>{t.name}</option>
                                   ))}
                                 </select>
-                                <button 
+                                <button
                                   onClick={handleAssignTreatment}
                                   disabled={!selectedTreatmentToAssign || isPending}
                                   className="bg-slate-900 text-white px-6 rounded-xl font-bold text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
@@ -320,11 +325,10 @@ export default function PatientManagement() {
                                   patientDetails?.patientTreatments.map((pt: any) => (
                                     <li key={pt.id} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
                                       <span className="font-semibold text-slate-700 text-sm">{pt.treatment?.name}</span>
-                                      <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase ${
-                                        pt.status === 'en_proceso' ? 'bg-amber-100 text-amber-700' :
-                                        pt.status === 'completado' ? 'bg-emerald-100 text-emerald-700' :
-                                        'bg-slate-100 text-slate-700'
-                                      }`}>
+                                      <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase ${pt.status === 'en_proceso' ? 'bg-amber-100 text-amber-700' :
+                                          pt.status === 'completado' ? 'bg-emerald-100 text-emerald-700' :
+                                            'bg-slate-100 text-slate-700'
+                                        }`}>
                                         {pt.status.replace('_', ' ')}
                                       </span>
                                     </li>
@@ -339,7 +343,7 @@ export default function PatientManagement() {
                             <h3 className="text-xl font-bold text-slate-900 font-headline mb-6 flex items-center gap-2">
                               <Activity className="text-primary" size={24} /> Timeline de Consultas
                             </h3>
-                            
+
                             {pastAppointments.length === 0 ? (
                               <p className="text-slate-500 italic bg-slate-50 p-6 rounded-xl border border-slate-100">Este paciente no tiene consultas previas registradas.</p>
                             ) : (
@@ -362,26 +366,26 @@ export default function PatientManagement() {
                                             {format(new Date(app.start_time), 'd MMM yyyy', { locale: es })}
                                           </span>
                                         </div>
-                                        
+
                                         {hasNote ? (
                                           <div className="mt-4 p-4 bg-yellow-50/50 border border-yellow-100 rounded-xl">
-                                            <p className="text-[10px] font-bold text-yellow-800 uppercase mb-1 flex items-center gap-1"><FileText size={12}/> Evolución Clínica</p>
+                                            <p className="text-[10px] font-bold text-yellow-800 uppercase mb-1 flex items-center gap-1"><FileText size={12} /> Evolución Clínica</p>
                                             <p className="text-sm font-medium text-slate-700 whitespace-pre-wrap">{app.clinical_notes[0].content}</p>
                                           </div>
                                         ) : (
                                           <div className="mt-4 pt-4 border-t border-slate-100">
-                                            <textarea 
+                                            <textarea
                                               value={localNoteState}
-                                              onChange={(e) => setNoteContent({...noteContent, [app.id]: e.target.value})}
+                                              onChange={(e) => setNoteContent({ ...noteContent, [app.id]: e.target.value })}
                                               placeholder="Escribir evolución para este turno..."
                                               className="w-full text-sm p-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/30 min-h-[80px]"
                                             />
-                                            <button 
+                                            <button
                                               onClick={() => handleSaveNote(app.id)}
                                               disabled={!localNoteState.trim() || savingNoteFor === app.id}
                                               className="mt-2 text-[11px] font-bold bg-slate-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-800 transition-colors disabled:opacity-50"
                                             >
-                                              {savingNoteFor === app.id ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} 
+                                              {savingNoteFor === app.id ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
                                               Guardar Evolución
                                             </button>
                                           </div>
@@ -434,48 +438,48 @@ export default function PatientManagement() {
                               </button>
                             )}
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-6">
                             <div>
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nombre Completo</p>
                               <p className="font-semibold text-slate-800">{patientDetails.patient.full_name}</p>
                             </div>
-                            
+
                             <div>
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">DNI</p>
                               {isEditingProfile ? (
-                                <input 
-                                  type="text" 
-                                  value={profileData.dni} 
-                                  onChange={e => setProfileData({...profileData, dni: e.target.value})}
+                                <input
+                                  type="text"
+                                  value={profileData.dni}
+                                  onChange={e => setProfileData({ ...profileData, dni: e.target.value })}
                                   className="w-full text-sm bg-slate-50 border-none rounded-lg p-2 focus:ring-2 focus:ring-primary/40"
                                 />
                               ) : (
                                 <p className="font-semibold text-slate-800">{patientDetails.patient.dni || 'No registrado'}</p>
                               )}
                             </div>
-                            
+
                             <div>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Phone size={12}/> Teléfono</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Phone size={12} /> Teléfono</p>
                               {isEditingProfile ? (
-                                <input 
-                                  type="text" 
-                                  value={profileData.phone} 
-                                  onChange={e => setProfileData({...profileData, phone: e.target.value})}
+                                <input
+                                  type="text"
+                                  value={profileData.phone}
+                                  onChange={e => setProfileData({ ...profileData, phone: e.target.value })}
                                   className="w-full text-sm bg-slate-50 border-none rounded-lg p-2 focus:ring-2 focus:ring-primary/40"
                                 />
                               ) : (
                                 <p className="font-semibold text-slate-800">{patientDetails.patient.phone}</p>
                               )}
                             </div>
-                            
+
                             <div>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Mail size={12}/> Correo Electrónico</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Mail size={12} /> Correo Electrónico</p>
                               {isEditingProfile ? (
-                                <input 
-                                  type="email" 
-                                  value={profileData.email} 
-                                  onChange={e => setProfileData({...profileData, email: e.target.value})}
+                                <input
+                                  type="email"
+                                  value={profileData.email}
+                                  onChange={e => setProfileData({ ...profileData, email: e.target.value })}
                                   className="w-full text-sm bg-slate-50 border-none rounded-lg p-2 focus:ring-2 focus:ring-primary/40"
                                 />
                               ) : (
@@ -486,7 +490,7 @@ export default function PatientManagement() {
 
                           {isEditingProfile && (
                             <div className="pt-6 border-t border-slate-100 flex justify-end">
-                              <button 
+                              <button
                                 onClick={handleUpdateProfile}
                                 disabled={isPending}
                                 className="bg-primary text-white font-bold py-2 px-6 rounded-xl hover:bg-primary/90 flex items-center gap-2"
@@ -515,15 +519,15 @@ export default function PatientManagement() {
                   <h3 className="text-xl font-bold font-headline text-slate-900">Agenda de Turno para {selectedPatient.full_name}</h3>
                   <p className="text-xs text-slate-500">Módulo de Asignación Administrativa</p>
                 </div>
-                <button 
-                  onClick={() => setIsBookingModalOpen(false)} 
+                <button
+                  onClick={() => setIsBookingModalOpen(false)}
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto">
-                <BookingFlow 
+                <BookingFlow
                   preloadedPatientId={selectedPatient.id}
                   preloadedFullName={selectedPatient.full_name}
                   preloadedPhone={selectedPatient.phone}
