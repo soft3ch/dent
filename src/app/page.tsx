@@ -8,13 +8,6 @@ export default function Home() {
           <div className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-headline">
             Dra. Flavia Gisela Toledo
           </div>
-          <nav className="hidden md:flex items-center gap-8 font-semibold">
-            <a href="/dashboard" className="text-slate-500 hover:text-slate-900 transition-all">Dashboard Dentist</a>
-            <a href="#" className="text-slate-500 hover:text-slate-900 transition-all">Patients</a>
-            <a href="#" className="text-slate-500 hover:text-slate-900 transition-all">Calendar</a>
-            <a href="#" className="text-slate-500 hover:text-slate-900 transition-all">Treatments</a>
-          </nav>
-          <div className="w-8 h-8 rounded-full bg-primary-container"></div>
         </div>
       </header>
 

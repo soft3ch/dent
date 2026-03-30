@@ -530,6 +530,7 @@ export default function PatientManagement() {
                   preloadedPatientId={selectedPatient.id}
                   preloadedFullName={selectedPatient.full_name}
                   preloadedPhone={selectedPatient.phone}
+                  preloadedEmail={patientDetails?.patient?.email}
                 />
               </div>
             </div>

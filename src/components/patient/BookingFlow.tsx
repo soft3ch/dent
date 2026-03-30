@@ -9,21 +9,25 @@ import {
   CheckCircle2,
   CalendarDays,
   Clock,
-  Loader2
+  Loader2,
+  UserPlus,
+  Stethoscope
 } from 'lucide-react';
 import { bookAppointment } from '@/application/use-cases/booking-actions';
 import { useMonthAvailability } from '@/application/use-cases/useMonthAvailability';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay, addMinutes, parse, isBefore, isAfter, startOfDay } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay, addMinutes, parse, isBefore, isAfter, startOfDay, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function BookingFlow({
   preloadedPatientId,
   preloadedFullName,
-  preloadedPhone
+  preloadedPhone,
+  preloadedEmail
 }: {
   preloadedPatientId?: string;
   preloadedFullName?: string;
   preloadedPhone?: string;
+  preloadedEmail?: string;
 } = {}) {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -33,6 +37,7 @@ export default function BookingFlow({
   const [formData, setFormData] = useState({
     fullName: preloadedFullName || '',
     phone: preloadedPhone || '',
+    email: preloadedEmail || '',
     reason: ''
   });
   const [paymentMethod, setPaymentMethod] = useState<'particular' | 'obra_social'>('particular');
@@ -100,9 +105,17 @@ export default function BookingFlow({
     return Array.from(new Set(slots)).sort();
   }, [selectedDate, monthData]);
 
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleConfirm = () => {
-    if (!selectedDate || !selectedTime || !formData.fullName || !formData.phone) {
-      setErrorMsg('Por favor, completa todos los campos requeridos (Nombre, Teléfono, Fecha y Hora).');
+    if (!selectedDate || !selectedTime || !formData.fullName || !formData.phone || !formData.email) {
+      setErrorMsg('Por favor, completa todos los campos requeridos (Nombre, Teléfono, Email, Fecha y Hora).');
+      return;
+    }
+    if (!isValidEmail(formData.email)) {
+      setErrorMsg('Por favor, ingresa un correo electrónico válido.');
       return;
     }
     if (paymentMethod === 'obra_social' && !insuranceName.trim()) {
@@ -121,7 +134,8 @@ export default function BookingFlow({
           dateStr: format(selectedDate, 'yyyy-MM-dd'),
           timeStr: selectedTime,
           paymentMethod,
-          insuranceName: paymentMethod === 'obra_social' ? insuranceName.trim() : null
+          insuranceName: paymentMethod === 'obra_social' ? insuranceName.trim() : null,
+          email: formData.email
         });
         setBookedDetails(result);
         setIsSuccess(true);
@@ -193,9 +207,9 @@ export default function BookingFlow({
   const paddingArray = Array.from({ length: startDayPadding });
   const weekDays = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
 
-  // Identify working days from schedule
   const workingDaysOfWeek = monthData ? new Set(monthData.schedule.map((s: any) => s.day_of_week)) : new Set();
   const pastMidnight = startOfDay(new Date());
+  const maxBookingDate = addDays(pastMidnight, 14);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -204,15 +218,26 @@ export default function BookingFlow({
         <div className="bg-surface-container-low p-8 rounded-xl">
           <h3 className="text-xl font-bold mb-6 text-on-surface">1. Selecciona Especialidad</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
             <button
-              onClick={() => setSelectedSpecialty('limpieza')}
-              className={`group flex flex-col p-4 rounded-xl text-left transition-all duration-300 shadow-sm border-2 ${selectedSpecialty === 'limpieza' ? 'border-primary bg-primary/5' : 'border-transparent bg-surface-container-lowest hover:translate-x-1 hover:border-primary/30'}`}
+              onClick={() => setSelectedSpecialty('primera_visita')}
+              className={`group flex flex-col p-4 rounded-xl text-left transition-all duration-300 shadow-sm border-2 ${selectedSpecialty === 'primera_visita' ? 'border-primary bg-primary/5' : 'border-transparent bg-surface-container-lowest hover:translate-x-1 hover:border-primary/30'}`}
             >
               <div className="w-12 h-12 bg-secondary-container rounded-lg flex items-center justify-center mb-4 text-on-secondary-container">
-                <Sparkles size={24} />
+                <UserPlus size={24} />
               </div>
-              <span className="font-bold text-on-surface block mb-1">Primera consulta</span>
-              <span className="text-xs text-on-surface-variant uppercase tracking-wider">Evaluación</span>
+              <span className="font-bold text-on-surface block mb-1">Primera Visita</span>
+              <span className="text-xs text-on-surface-variant uppercase tracking-wider">Evaluación Inicial</span>
+            </button>
+            <button
+              onClick={() => setSelectedSpecialty('tratamientos')}
+              className={`group flex flex-col p-4 rounded-xl text-left transition-all duration-300 shadow-sm border-2 ${selectedSpecialty === 'tratamientos' ? 'border-primary bg-primary/5' : 'border-transparent bg-surface-container-lowest hover:translate-x-1 hover:border-primary/30'}`}
+            >
+              <div className="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center mb-4 text-on-primary-fixed-variant">
+                <Stethoscope size={24} />
+              </div>
+              <span className="font-bold text-on-surface block mb-1">Tratamientos</span>
+              <span className="text-xs text-on-surface-variant uppercase tracking-wider">Seguimiento</span>
             </button>
             <button
               onClick={() => setSelectedSpecialty('limpieza')}
@@ -273,6 +298,17 @@ export default function BookingFlow({
               />
             </div>
             <div className="md:col-span-2 space-y-2">
+              <label className="text-sm font-semibold text-on-surface-variant ml-1">Correo Electrónico *</label>
+              <input
+                value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                readOnly={!!preloadedPatientId}
+                type="email"
+                className={`w-full h-12 px-4 rounded-lg bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/40 text-on-surface ${preloadedPatientId ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''}`}
+                placeholder="tu@email.com"
+              />
+            </div>
+            <div className="md:col-span-2 space-y-2">
               <label className="text-sm font-semibold text-on-surface-variant ml-1">Motivo de la consulta</label>
               <textarea
                 value={formData.reason}
@@ -290,8 +326,8 @@ export default function BookingFlow({
                   type="button"
                   onClick={() => setPaymentMethod('particular')}
                   className={`flex items-center justify-center py-3 px-4 rounded-xl border-2 transition-all font-semibold ${paymentMethod === 'particular'
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-transparent bg-surface-container-lowest text-on-surface hover:border-primary/30'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-transparent bg-surface-container-lowest text-on-surface hover:border-primary/30'
                     }`}
                 >
                   Particular
@@ -300,8 +336,8 @@ export default function BookingFlow({
                   type="button"
                   onClick={() => setPaymentMethod('obra_social')}
                   className={`flex items-center justify-center py-3 px-4 rounded-xl border-2 transition-all font-semibold ${paymentMethod === 'obra_social'
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-transparent bg-surface-container-lowest text-on-surface hover:border-primary/30'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-transparent bg-surface-container-lowest text-on-surface hover:border-primary/30'
                     }`}
                 >
                   Obra Social
@@ -359,8 +395,9 @@ export default function BookingFlow({
               {daysInMonth.map((day, idx) => {
                 const isSelected = selectedDate && isSameDay(day, selectedDate);
                 const isPast = isBefore(day, pastMidnight);
+                const isTooFar = isAfter(day, maxBookingDate);
                 const isWorking = workingDaysOfWeek.has(getDay(day));
-                const isDisabled = isPast || !isWorking || isLoadingMonth;
+                const isDisabled = isPast || isTooFar || !isWorking || isLoadingMonth;
 
                 return (
                   <button
@@ -419,9 +456,9 @@ export default function BookingFlow({
 
           <button
             onClick={handleConfirm}
-            disabled={isBooking || !selectedTime}
+            disabled={isBooking || !selectedTime || !formData.fullName || !formData.phone || !formData.email || !isValidEmail(formData.email)}
             className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 
-              ${isBooking || !selectedTime
+              ${isBooking || !selectedTime || !formData.fullName || !formData.phone || !formData.email || !isValidEmail(formData.email)
                 ? 'bg-surface-container text-outline cursor-not-allowed opacity-70'
                 : 'bg-gradient-to-br from-primary to-primary-container text-white hover:shadow-xl transform active:scale-[0.98]'
               }`}
@@ -430,7 +467,7 @@ export default function BookingFlow({
           </button>
 
           <p className="text-xs text-center text-on-surface-variant px-4">
-            Al confirmar, aceptas nuestra política de privacidad y los términos de cancelación.
+            Te enviaremos un link de confirmación a este correo 24 horas antes de tu cita.
           </p>
         </div>
       </div>

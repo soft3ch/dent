@@ -3,21 +3,21 @@ import { Inter, Manrope } from 'next/font/google';
 import './globals.css';
 import QueryProvider from '@/components/providers/QueryProvider';
 
-const inter = Inter({ 
-  subsets: ['latin'], 
+const inter = Inter({
+  subsets: ['latin'],
   variable: '--font-inter',
-  weight: ['400', '500', '600', '700'] 
+  weight: ['400', '500', '600', '700']
 });
 
-const manrope = Manrope({ 
-  subsets: ['latin'], 
+const manrope = Manrope({
+  subsets: ['latin'],
   variable: '--font-manrope',
-  weight: ['400', '600', '700', '800'] 
+  weight: ['400', '600', '700', '800']
 });
 
 export const metadata: Metadata = {
-  title: 'Clinical Serenity',
-  description: 'Premium Oral Care Management',
+  title: 'Dra. Flavia Gisela Toledo',
+  description: 'Gestión Odontológica Integral',
 };
 
 export default function RootLayout({
