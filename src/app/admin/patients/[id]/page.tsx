@@ -5,7 +5,7 @@ import {
 } from '@/application/use-cases/patient-actions';
 import PatientRecordHeader from '@/components/dentist/PatientRecordHeader';
 import MedicalHistorySection from '@/components/dentist/MedicalHistorySection';
-import VisualOdontogram from '@/components/dentist/VisualOdontogram';
+import DualOdontogram from '@/components/dentist/DualOdontogram';
 import dynamic from 'next/dynamic';
 import { 
   Loader2, ArrowLeft, FileText, CheckCircle2, Clock, Activity 
@@ -70,6 +70,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
             patient={data.patient} 
             medicalHistory={history} 
             pastAppointments={data.appointments} 
+            odontogramEntries={odontogram}
           />
         </div>
       </nav>
@@ -82,7 +83,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
         />
 
         {/* ODONTOGRAMA (SECCIÓN PRINCIPAL) */}
-        <VisualOdontogram 
+        <DualOdontogram 
           patientId={id} 
           initialEntries={odontogram} 
           onUpdate={fetchData} 
