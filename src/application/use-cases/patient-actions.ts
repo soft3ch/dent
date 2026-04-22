@@ -143,6 +143,23 @@ export async function saveClinicalNote(data: { patientId: string, appointmentId:
 }
 
 export async function saveMultipleOdontogramEntries(entries: { patient_id: string, tooth_number: number, condition: string, description?: string }[]) {
+  if (entries.length === 0) return [];
+
+  const patientId = entries[0].patient_id;
+  
+  // To ensure we only keep the latest state, we'll delete existing entries 
+  // for the specific tooth and surface being updated.
+  for (const entry of entries) {
+    const { error: deleteError } = await supabase
+      .from('odontogram_entries')
+      .delete()
+      .eq('patient_id', patientId)
+      .eq('tooth_number', entry.tooth_number)
+      .eq('description', entry.description || ''); // match exactly the surface if provided
+    
+    if (deleteError) console.error('Error deleting previous odontogram entry:', deleteError);
+  }
+
   const { data, error } = await supabase
     .from('odontogram_entries')
     .insert(entries)

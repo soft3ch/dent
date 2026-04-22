@@ -9,6 +9,7 @@ import { addScheduleBlock, updateAppointmentStatus, checkOverlappingAppointments
 import { startOfWeek, endOfWeek, format, eachDayOfInterval, addDays, subDays, isSameDay, startOfDay, endOfDay, differenceInMinutes, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Link from 'next/link';
+import { InstallPWAButton } from './InstallPWAButton';
 
 export default function Dashboard() {
   // Initialize realtime listener
@@ -138,6 +139,9 @@ export default function Dashboard() {
             <Calendar size={20} /><span>Agenda</span>
           </Link>
           <Link href="/admin/patients" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-200/50 rounded-xl transition-all"><Users size={20} /><span>Pacientes</span></Link>
+          <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
+            <InstallPWAButton />
+          </div>
         </nav>
       </aside>
 

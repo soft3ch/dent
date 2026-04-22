@@ -30,15 +30,14 @@ export default function VisualOdontogram({ patientId, initialEntries, onUpdate }
   const currentTeethState = React.useMemo(() => {
     const state: { [key: number]: string } = {};
     
-    // Asumimos que initialEntries ya viene ordenado por fecha desc o lo ordenamos nosotros
+    // Al guardar borramos previos, pero por seguridad ordenamos de más viejo a más nuevo 
+    // para que la última aplicación prevalezca al construir la vista inicial.
     const sortedEntries = [...initialEntries].sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
 
     sortedEntries.forEach(entry => {
-      if (!state[entry.tooth_number]) {
-        state[entry.tooth_number] = entry.condition;
-      }
+      state[entry.tooth_number] = entry.condition;
     });
 
     // Combinar con cambios pendientes que aún no se han guardado

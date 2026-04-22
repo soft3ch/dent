@@ -30,17 +30,30 @@ const BOTTOM_MILK_RIGHT: number[] = [71,72,73,74,75];
  
  function buildFaceState(entries: any[]): Record<number, Record<Face, string>> {
    const byTooth: Record<number, Record<Face, string>> = {};
-   const sorted = [...entries].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+   // Order by created_at ascending so that later entries override earlier ones
+   const sorted = [...entries].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+   
    sorted.forEach(e => {
      const t = e.tooth_number as number;
      const desc: string = e.description || '';
      const m = desc.match(/surface=(top|right|bottom|left|center)/);
      const face = (m ? (m[1] as Face) : null);
-     if (!byTooth[t]) byTooth[t] = { top: 'Sano', right: 'Sano', bottom: 'Sano', left: 'Sano', center: 'Sano' };
+     
+     if (!byTooth[t]) {
+       byTooth[t] = { top: 'Sano', right: 'Sano', bottom: 'Sano', left: 'Sano', center: 'Sano' };
+     }
+     
      if (face) {
        byTooth[t][face] = e.condition;
-     } else if (!face) {
-       byTooth[t] = { top: e.condition, right: e.condition, bottom: e.condition, left: e.condition, center: e.condition };
+     } else {
+       // If no surface is specified, it applies to the whole tooth
+       byTooth[t] = { 
+         top: e.condition, 
+         right: e.condition, 
+         bottom: e.condition, 
+         left: e.condition, 
+         center: e.condition 
+       };
      }
    });
    return byTooth;
